@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>অর্থকোষ - Personal Finance</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#0f172a;--bg2:#1e293b;--bg3:#334155;
+  --card:#1e293b;--border:#334155;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+  --accent:#38bdf8;--green:#4ade80;--green2:#16a34a;
+  --red:#f87171;--red2:#dc2626;--yellow:#fbbf24;
+  --orange:#fb923c;--radius:16px;--radius-sm:10px;
+  --shadow:0 4px 24px rgba(0,0,0,0.4);--shadow-sm:0 2px 8px rgba(0,0,0,0.3);
+}
+.light{
+  --bg:#f0f4f8;--bg2:#fff;--bg3:#e2e8f0;
+  --card:#fff;--border:#e2e8f0;
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --shadow:0 4px 24px rgba(0,0,0,0.08);--shadow-sm:0 2px 8px rgba(0,0,0,0.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Hind Siliguri',sans-serif;overflow:hidden;}
+
+/* LOADING */
+#loading-screen{position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.loading-logo{font-size:64px;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+.loading-text{font-size:16px;color:var(--text2);}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:32px;}
+.login-logo{font-size:72px;}
+.login-title{font-size:32px;font-weight:700;color:var(--text);text-align:center;}
+.login-features{display:flex;flex-direction:column;gap:12px;width:100%;max-width:300px;}
+.login-feature{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text2);}
+.login-feature span:first-child{font-size:22px;}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:300px;padding:16px;border-radius:var(--radius);background:#fff;color:#1f2937;font-size:16px;font-weight:700;font-family:'Hind Siliguri',sans-serif;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.3);transition:all 0.2s;}
+.btn-google:active{transform:scale(0.97);}
+.btn-google img{width:22px;height:22px;}
+.login-note{font-size:11px;color:var(--text3);text-align:center;max-width:280px;line-height:1.6;}
+
+/* APP */
+#app{height:100vh;display:none;flex-direction:column;}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+#content{flex:1;overflow-y:auto;padding-bottom:80px;}
+#content::-webkit-scrollbar{display:none;}
+
+/* HEADER */
+.header{padding:14px 20px 12px;background:var(--bg);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);}
+.header-title{font-size:20px;font-weight:700;}
+.header-actions{display:flex;gap:8px;align-items:center;}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:none;background:var(--card);color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.icon-btn:active{background:var(--bg3);}
+.user-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);cursor:pointer;}
+.lang-btn{padding:5px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;}
+
+/* BOTTOM NAV */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;padding:8px 0 max(8px,env(safe-area-inset-bottom));z-index:100;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 0;color:var(--text3);font-size:10px;font-weight:500;transition:color 0.2s;}
+.nav-item.active{color:var(--accent);}
+.nav-icon{font-size:22px;line-height:1;}
+
+/* PAGES */
+.page{display:none;}
+.page.active{display:block;}
+
+/* DASHBOARD */
+.dash-greeting{padding:20px 20px 0;}
+.dash-greeting h2{font-size:22px;font-weight:700;}
+.dash-greeting p{color:var(--text2);font-size:13px;margin-top:2px;}
+.balance-card{margin:16px 20px;background:linear-gradient(135deg,#0ea5e9 0%,#6366f1 100%);border-radius:20px;padding:24px;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(14,165,233,0.3);}
+.balance-card::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,0.08);}
+.balance-label{font-size:12px;color:rgba(255,255,255,0.75);letter-spacing:1px;text-transform:uppercase;}
+.balance-amount{font-size:36px;font-weight:700;color:#fff;margin:4px 0;font-family:'JetBrains Mono',monospace;}
+.balance-sub{font-size:12px;color:rgba(255,255,255,0.7);}
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px;margin-bottom:12px;}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:16px;border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+.stat-icon{font-size:22px;margin-bottom:8px;}
+.stat-label{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-value{font-size:18px;font-weight:700;margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.stat-value.income{color:var(--green);}
+.stat-value.expense{color:var(--red);}
+.stat-value.lent{color:var(--yellow);}
+.stat-value.borrow{color:var(--orange);}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 10px;}
+.section-title{font-size:16px;font-weight:700;}
+.see-all{font-size:12px;color:var(--accent);cursor:pointer;}
+
+/* TXN */
+.txn-list{padding:0 20px;display:flex;flex-direction:column;gap:8px;}
+.txn-item{background:var(--card);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);animation:slideIn 0.3s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.txn-icon-wrap{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.txn-info{flex:1;min-width:0;}
+.txn-cat{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.txn-note{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.txn-date{font-size:10px;color:var(--text3);}
+.txn-right{text-align:right;flex-shrink:0;}
+.txn-amount{font-size:15px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.txn-amount.pos{color:var(--green);}
+.txn-amount.neg{color:var(--red);}
+
+/* FORMS */
+.form-page{padding:16px 20px;}
+.form-tabs{display:flex;gap:8px;margin-bottom:20px;}
+.form-tab{flex:1;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--card);color:var(--text2);font-size:13px;font-weight:600;font-family:'Hind Siliguri',sans-serif;cursor:pointer;transition:all 0.2s;text-align:center;}
+.form-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.form-group{margin-bottom:16px;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;margin-bottom:6px;display:block;letter-spacing:0.5px;}
+.form-input{width:100%;padding:13px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:15px;font-family:'Hind Siliguri',sans-serif;outline:none;transition:border-color 0.2s;-webkit-appearance:none;}
+.form-input:focus{border-color:var(--accent);}
+.form-select{width:100%;padding:13px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:15px;font-family:'Hind Siliguri',sans-serif;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px;}
+.btn-primary{width:100%;padding:15px;border-radius:var(--radius-sm);border:none;background:linear-gradient(135deg,var(--accent),#6366f1);color:#fff;font-size:16px;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;transition:all 0.2s;margin-top:8px;}
+.btn-primary:active{transform:scale(0.98);opacity:0.9;}
+.btn-danger{padding:8px 14px;border-radius:8px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:12px;font-family:'Hind Siliguri',sans-serif;cursor:pointer;}
+.btn-success{padding:8px 14px;border-radius:8px;border:1px solid var(--green);background:transparent;color:var(--green);font-size:12px;font-family:'Hind Siliguri',sans-serif;cursor:pointer;}
+
+/* DEBT */
+.debt-card{background:var(--card);border-radius:var(--radius);padding:16px;margin:0 20px 10px;border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+.debt-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.debt-name{font-size:15px;font-weight:700;}
+.debt-phone{font-size:11px;color:var(--text2);margin-top:2px;}
+.debt-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:0.5px;}
+.badge-lent{background:rgba(251,191,36,0.15);color:var(--yellow);}
+.badge-borrowed{background:rgba(251,146,60,0.15);color:var(--orange);}
+.badge-done{background:rgba(74,222,128,0.15);color:var(--green);}
+.progress-wrap{margin:10px 0;}
+.progress-info{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:5px;}
+.progress-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.6s ease;}
+.fill-lent{background:linear-gradient(90deg,var(--yellow),var(--orange));}
+.fill-borrow{background:linear-gradient(90deg,var(--orange),var(--red));}
+.debt-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:6px;}
+.debt-date{font-size:10px;color:var(--text3);}
+.debt-actions{display:flex;gap:6px;}
+
+/* CHARTS */
+.chart-card{background:var(--card);border-radius:var(--radius);padding:16px;margin:0 20px 12px;border:1px solid var(--border);}
+.chart-title{font-size:14px;font-weight:700;margin-bottom:14px;}
+.chart-wrap{position:relative;height:200px;}
+
+/* REPORTS */
+.report-period{display:flex;gap:8px;padding:0 20px 12px;overflow-x:auto;}
+.report-period::-webkit-scrollbar{display:none;}
+.period-btn{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);color:var(--text2);font-size:12px;font-weight:600;font-family:'Hind Siliguri',sans-serif;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+.period-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.report-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px 12px;}
+.report-stat{background:var(--card);border-radius:var(--radius-sm);padding:14px 16px;border:1px solid var(--border);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:20px;max-height:85vh;overflow-y:auto;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:16px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);color:var(--text);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:300;opacity:0;transition:all 0.3s;white-space:nowrap;box-shadow:var(--shadow);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.success{background:var(--green2);}
+.toast.error{background:var(--red2);}
+
+/* SEARCH */
+.search-wrap{padding:12px 20px;position:relative;}
+.search-input{width:100%;padding:12px 14px 12px 42px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:14px;font-family:'Hind Siliguri',sans-serif;outline:none;}
+.search-icon{position:absolute;left:32px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px;pointer-events:none;}
+
+/* SETTINGS */
+.settings-item{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);cursor:pointer;}
+.settings-left{display:flex;align-items:center;gap:14px;}
+.settings-icon{font-size:22px;width:36px;text-align:center;}
+.settings-label{font-size:15px;font-weight:500;}
+.settings-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+.settings-arrow{color:var(--text3);font-size:16px;}
+.toggle-wrap{width:48px;height:26px;border-radius:13px;background:var(--border);position:relative;cursor:pointer;transition:background 0.3s;}
+.toggle-wrap.on{background:var(--accent);}
+.toggle-knob{width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+.toggle-wrap.on .toggle-knob{left:25px;}
+.section-divider{padding:16px 20px 6px;font-size:11px;color:var(--text3);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+
+/* ANALYTICS */
+.analytics-score{margin:16px 20px;background:linear-gradient(135deg,#1e293b,#334155);border-radius:var(--radius);padding:20px;border:1px solid var(--border);text-align:center;}
+.score-value{font-size:56px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.insight-card{background:var(--card);border-radius:var(--radius-sm);padding:14px 16px;margin:0 20px 8px;border:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.insight-icon{font-size:28px;}
+.insight-text{flex:1;}
+.insight-title{font-size:13px;font-weight:600;}
+.insight-desc{font-size:11px;color:var(--text2);margin-top:2px;}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3);}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-text{font-size:14px;}
+
+/* FILTER */
+.filter-row{display:flex;gap:8px;padding:0 20px 12px;overflow-x:auto;}
+.filter-row::-webkit-scrollbar{display:none;}
+.filter-chip{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);color:var(--text2);font-size:12px;font-weight:600;font-family:'Hind Siliguri',sans-serif;cursor:pointer;white-space:nowrap;}
+.filter-chip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* RETURN */
+.return-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.return-item:last-child{border-bottom:none;}
+
+/* USER CARD */
+.user-card{background:linear-gradient(135deg,#0ea5e9,#6366f1);margin:16px 20px;border-radius:var(--radius);padding:20px;display:flex;align-items:center;gap:14px;}
+.user-card-avatar{width:56px;height:56px;border-radius:50%;border:3px solid rgba(255,255,255,0.4);object-fit:cover;}
+.user-card-name{font-size:16px;font-weight:700;color:#fff;}
+.user-card-email{font-size:12px;color:rgba(255,255,255,0.75);margin-top:2px;}
+.sync-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--green);background:rgba(74,222,128,0.1);padding:3px 8px;border-radius:10px;margin-top:6px;}
+
+input[type="date"]{color-scheme:dark;}
+.light input[type="date"]{color-scheme:light;}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="loading-logo">💰</div>
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">লোড হচ্ছে...</div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-logo">💰</div>
+  <div style="text-align:center">
+    <div class="login-title">অর্থকোষ</div>
+    <div style="font-size:13px;color:#6366f1;font-weight:600;margin-top:4px">Personal Finance Manager</div>
+  </div>
+  <div class="login-features">
+    <div class="login-feature"><span>🔄</span><span>সব ডিভাইসে Real-time Sync</span></div>
+    <div class="login-feature"><span>☁️</span><span>Cloud Backup — কখনো হারাবে না</span></div>
+    <div class="login-feature"><span>📊</span><span>আয়, খরচ, ধার সব এক জায়গায়</span></div>
+    <div class="login-feature"><span>🔒</span><span>সম্পূর্ণ প্রাইভেট — শুধু আপনার</span></div>
+  </div>
+  <button class="btn-google" onclick="doSignIn()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+    <span id="google-btn-text">Google দিয়ে Login করুন</span>
+  </button>
+  <div class="login-note">আপনার Google account দিয়ে login করুন। আপনার সব data সম্পূর্ণ প্রাইভেট থাকবে।</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div id="main">
+    <div class="header">
+      <div class="header-title" id="page-title">ড্যাশবোর্ড</div>
+      <div class="header-actions">
+        <button class="lang-btn" onclick="toggleLang()" id="lang-btn">EN</button>
+        <button class="icon-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
+        <img class="user-avatar" id="user-avatar" src="https://ui-avatars.com/api/?name=U&background=0ea5e9&color=fff" onclick="showPage('settings')">
+      </div>
+    </div>
+    <div id="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="dash-greeting">
+          <h2 id="dash-welcome">স্বাগতম! 👋</h2>
+          <p id="dash-date"></p>
+        </div>
+        <div class="balance-card">
+          <div class="balance-label" id="lbl-total-balance">মোট ব্যালেন্স</div>
+          <div class="balance-amount" id="dash-balance">৳০</div>
+          <div class="balance-sub" id="dash-balance-sub">এই মাসের হিসাব</div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-label" id="lbl-income">মোট আয়</div><div class="stat-value income" id="dash-income">৳০</div></div>
+          <div class="stat-card"><div class="stat-icon">📉</div><div class="stat-label" id="lbl-expense">মোট খরচ</div><div class="stat-value expense" id="dash-expense">৳০</div></div>
+          <div class="stat-card"><div class="stat-icon">🤝</div><div class="stat-label" id="lbl-lent">ধার দিয়েছি</div><div class="stat-value lent" id="dash-lent">৳০</div></div>
+          <div class="stat-card"><div class="stat-icon">💳</div><div class="stat-label" id="lbl-borrowed">ধার নিয়েছি</div><div class="stat-value borrow" id="dash-borrow">৳০</div></div>
+        </div>
+        <div class="section-header">
+          <span class="section-title" id="lbl-recent">সাম্প্রতিক লেনদেন</span>
+          <span class="see-all" onclick="showPage('transactions')" id="lbl-see-all">সব দেখুন</span>
+        </div>
+        <div class="txn-list" id="recent-txns"></div>
+        <div style="height:12px"></div>
+      </div>
+
+      <!-- TRANSACTIONS -->
+      <div class="page" id="page-transactions">
+        <div class="search-wrap"><span class="search-icon">🔍</span><input class="search-input" type="text" id="txn-search" oninput="renderTransactions()" placeholder="খুঁজুন..."></div>
+        <div class="filter-row" id="txn-filters">
+          <div class="filter-chip active" onclick="setTxnFilter('all',this)" id="fc-all">সব</div>
+          <div class="filter-chip" onclick="setTxnFilter('income',this)" id="fc-income">আয়</div>
+          <div class="filter-chip" onclick="setTxnFilter('expense',this)" id="fc-expense">খরচ</div>
+        </div>
+        <div class="txn-list" id="all-txns"></div>
+        <div style="height:12px"></div>
+      </div>
+
+      <!-- ADD -->
+      <div class="page" id="page-add">
+        <div class="form-page">
+          <div class="form-tabs">
+            <div class="form-tab active" onclick="setAddTab('income',this)" id="tab-income">💚 আয়</div>
+            <div class="form-tab" onclick="setAddTab('expense',this)" id="tab-expense">❤️ খরচ</div>
+          </div>
+          <div class="form-group"><label class="form-label" id="lbl-amount">পরিমাণ (৳)</label><input class="form-input" type="number" id="add-amount" placeholder="0.00" inputmode="decimal"></div>
+          <div class="form-group"><label class="form-label" id="lbl-category">ক্যাটাগরি</label><select class="form-select" id="add-category"></select></div>
+          <div class="form-group"><label class="form-label" id="lbl-date">তারিখ</label><input class="form-input" type="date" id="add-date"></div>
+          <div class="form-group"><label class="form-label" id="lbl-note">নোট</label><input class="form-input" type="text" id="add-note" placeholder="ঐচ্ছিক..."></div>
+          <button class="btn-primary" onclick="saveTransaction()" id="btn-save">✅ সেভ করুন</button>
+        </div>
+      </div>
+
+      <!-- DEBT -->
+      <div class="page" id="page-debt">
+        <div class="form-tabs" style="margin:12px 20px 4px">
+          <div class="form-tab active" onclick="setDebtTab('lent',this)" id="tab-lent">🤝 ধার দিয়েছি</div>
+          <div class="form-tab" onclick="setDebtTab('borrowed',this)" id="tab-borrowed">💳 ধার নিয়েছি</div>
+        </div>
+        <div id="debt-list-wrap"></div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="page" id="page-reports">
+        <div class="report-period">
+          <button class="period-btn active" onclick="setReportPeriod('daily',this)" id="pb-daily">আজ</button>
+          <button class="period-btn" onclick="setReportPeriod('weekly',this)" id="pb-weekly">এই সপ্তাহ</button>
+          <button class="period-btn" onclick="setReportPeriod('monthly',this)" id="pb-monthly">এই মাস</button>
+          <button class="period-btn" onclick="setReportPeriod('yearly',this)" id="pb-yearly">এই বছর</button>
+        </div>
+        <div class="report-stats-grid" id="report-stats"></div>
+        <div class="chart-card" style="margin-top:4px"><div class="chart-title" id="lbl-chart-bar">আয় বনাম খরচ</div><div class="chart-wrap"><canvas id="bar-chart"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title" id="lbl-chart-pie">খরচের ধরন</div><div class="chart-wrap"><canvas id="pie-chart"></canvas></div></div>
+        <div style="height:12px"></div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div class="page" id="page-analytics">
+        <div class="analytics-score"><div class="score-value" id="health-score">--</div><div style="font-size:12px;color:var(--text2);margin-top:4px" id="lbl-health">আর্থিক স্বাস্থ্য স্কোর / ১০০</div></div>
+        <div id="insights-list"></div>
+        <div class="chart-card"><div class="chart-title" id="lbl-trend">মাসিক ট্রেন্ড</div><div class="chart-wrap"><canvas id="trend-chart"></canvas></div></div>
+        <div style="height:12px"></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="user-card">
+          <img class="user-card-avatar" id="user-avatar2" src="https://ui-avatars.com/api/?name=U&background=0ea5e9&color=fff">
+          <div><div class="user-card-name" id="user-name">User</div><div class="user-card-email" id="user-email">email</div><div class="sync-badge">🔄 Cloud Synced</div></div>
+        </div>
+        <div class="section-divider">সাধারণ</div>
+        <div class="settings-item" onclick="toggleTheme()">
+          <div class="settings-left"><div class="settings-icon">🌙</div><div><div class="settings-label" id="lbl-darkmode">ডার্ক মোড</div><div class="settings-sub">অ্যাপের থিম পরিবর্তন</div></div></div>
+          <div class="toggle-wrap on" id="theme-toggle"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="settings-item" onclick="toggleLang()">
+          <div class="settings-left"><div class="settings-icon">🌐</div><div><div class="settings-label">ভাষা / Language</div><div class="settings-sub">বাংলা / English</div></div></div>
+          <div class="settings-arrow" id="lang-arrow">EN →</div>
+        </div>
+        <div class="section-divider">ডেটা</div>
+        <div class="settings-item" onclick="exportJSON()">
+          <div class="settings-left"><div class="settings-icon">📤</div><div><div class="settings-label" id="lbl-export">ব্যাকআপ Export</div><div class="settings-sub">JSON ফাইলে সেভ করুন</div></div></div>
+          <div class="settings-arrow">›</div>
+        </div>
+        <div class="section-divider">অ্যাকাউন্ট</div>
+        <div class="settings-item" onclick="doSignOut()">
+          <div class="settings-left"><div class="settings-icon">🚪</div><div><div class="settings-label" style="color:var(--red)">Logout</div><div class="settings-sub">অ্যাকাউন্ট থেকে বের হন</div></div></div>
+          <div class="settings-arrow">›</div>
+        </div>
+        <div class="section-divider">অ্যাপ সম্পর্কে</div>
+        <div class="settings-item"><div class="settings-left"><div class="settings-icon">ℹ️</div><div><div class="settings-label">অর্থকোষ</div><div class="settings-sub">Version 2.0 • Firebase Sync</div></div></div></div>
+        <div style="height:12px"></div>
+      </div>
+    </div>
+
+    <div id="bottom-nav">
+      <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard"><div class="nav-icon">🏠</div><div id="nav-lbl-home">হোম</div></div>
+      <div class="nav-item" onclick="showPage('transactions')" id="nav-transactions"><div class="nav-icon">📋</div><div id="nav-lbl-txn">লেনদেন</div></div>
+      <div class="nav-item" onclick="showPage('add')" id="nav-add"><div class="nav-icon">➕</div><div id="nav-lbl-add">যোগ করুন</div></div>
+      <div class="nav-item" onclick="showPage('debt')" id="nav-debt"><div class="nav-icon">🤝</div><div id="nav-lbl-debt">ধার</div></div>
+      <div class="nav-item" onclick="showPage('reports')" id="nav-reports"><div class="nav-icon">📊</div><div id="nav-lbl-reports">রিপোর্ট</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="debt-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="debt-modal-title">নতুন ধার</div>
+    <div class="form-group"><label class="form-label">নাম</label><input class="form-input" type="text" id="debt-name" placeholder="ব্যক্তির নাম"></div>
+    <div class="form-group"><label class="form-label">ফোন নম্বর</label><input class="form-input" type="tel" id="debt-phone" placeholder="01XXXXXXXXX"></div>
+    <div class="form-group"><label class="form-label">পরিমাণ (৳)</label><input class="form-input" type="number" id="debt-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">তারিখ</label><input class="form-input" type="date" id="debt-date"></div>
+    <div class="form-group"><label class="form-label">শেষ তারিখ (ঐচ্ছিক)</label><input class="form-input" type="date" id="debt-due"></div>
+    <div class="form-group"><label class="form-label">নোট</label><input class="form-input" type="text" id="debt-note" placeholder="ঐচ্ছিক..."></div>
+    <button class="btn-primary" onclick="saveDebt()">✅ সেভ করুন</button>
+    <button class="btn-primary" style="background:var(--bg3);color:var(--text2);margin-top:8px" onclick="closeModal('debt-modal')">বাতিল</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="return-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="return-modal-title">পেমেন্ট যোগ করুন</div>
+    <div class="form-group"><label class="form-label">পরিমাণ (৳)</label><input class="form-input" type="number" id="return-amount" placeholder="0.00" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">তারিখ</label><input class="form-input" type="date" id="return-date"></div>
+    <div class="form-group"><label class="form-label">নোট</label><input class="form-input" type="text" id="return-note" placeholder="ঐচ্ছিক..."></div>
+    <button class="btn-primary" onclick="saveReturn()">✅ সেভ করুন</button>
+    <button class="btn-primary" style="background:var(--bg3);color:var(--text2);margin-top:8px" onclick="closeModal('return-modal')">বাতিল</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="history-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">পেমেন্ট ইতিহাস</div>
+    <div id="history-list"></div>
+    <button class="btn-primary" style="background:var(--bg3);color:var(--text2);margin-top:12px" onclick="closeModal('history-modal')">বন্ধ করুন</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">লেনদেন সম্পাদনা</div>
+    <input type="hidden" id="edit-id">
+    <input type="hidden" id="edit-type">
+    <div class="form-group"><label class="form-label">পরিমাণ (৳)</label><input class="form-input" type="number" id="edit-amount" inputmode="decimal"></div>
+    <div class="form-group"><label class="form-label">ক্যাটাগরি</label><select class="form-select" id="edit-category"></select></div>
+    <div class="form-group"><label class="form-label">তারিখ</label><input class="form-input" type="date" id="edit-date"></div>
+    <div class="form-group"><label class="form-label">নোট</label><input class="form-input" type="text" id="edit-note"></div>
+    <button class="btn-primary" onclick="updateTransaction()">✅ আপডেট করুন</button>
+    <button class="btn-primary" style="background:rgba(248,113,113,0.15);color:var(--red);margin-top:8px" onclick="deleteTransaction()">🗑️ মুছুন</button>
+    <button class="btn-primary" style="background:var(--bg3);color:var(--text2);margin-top:8px" onclick="closeModal('edit-modal')">বাতিল</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAfoj13Ebo8jhqtNdma6fZuX6vfB-VbePw",
+  authDomain: "orthokosh.firebaseapp.com",
+  projectId: "orthokosh",
+  storageBucket: "orthokosh.firebasestorage.app",
+  messagingSenderId: "605542007811",
+  appId: "1:605542007811:web:7dfc90adb0c06b4cb8fa36"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+let unsubTxn = null, unsubDebt = null;
+
+// Expose functions globally
+window.doSignIn = async () => {
+  document.getElementById('google-btn-text').textContent = 'লোড হচ্ছে...';
+  try {
+    await signInWithRedirect(auth, provider);
+  } catch(e) {
+    document.getElementById('google-btn-text').textContent = 'Google দিয়ে Login করুন';
+    showToast('Error: ' + e.message, 'error');
+  }
+};
+
+window.doSignOut = async () => {
+  if(!confirm('Logout করবেন?')) return;
+  if(unsubTxn) unsubTxn();
+  if(unsubDebt) unsubDebt();
+  await signOut(auth);
+};
+
+window.dbSaveTxn = async (txn) => {
+  const user = auth.currentUser;
+  if(!user) return;
+  await setDoc(doc(db,'users',user.uid,'transactions',txn.id), txn);
+};
+window.dbDeleteTxn = async (id) => {
+  const user = auth.currentUser;
+  if(!user) return;
+  await deleteDoc(doc(db,'users',user.uid,'transactions',id));
+};
+window.dbSaveDebt = async (debt) => {
+  const user = auth.currentUser;
+  if(!user) return;
+  await setDoc(doc(db,'users',user.uid,'debts',debt.id), debt);
+};
+window.dbDeleteDebt = async (id) => {
+  const user = auth.currentUser;
+  if(!user) return;
+  await deleteDoc(doc(db,'users',user.uid,'debts',id));
+};
+
+function startListeners(uid) {
+  if(unsubTxn) unsubTxn();
+  if(unsubDebt) unsubDebt();
+  unsubTxn = onSnapshot(collection(db,'users',uid,'transactions'), snap => {
+    transactions = [];
+    snap.forEach(d => transactions.push(d.data()));
+    transactions.sort((a,b) => b.date.localeCompare(a.date));
+    renderDashboard();
+    renderTransactions();
+  });
+  unsubDebt = onSnapshot(collection(db,'users',uid,'debts'), snap => {
+    debts = [];
+    snap.forEach(d => debts.push(d.data()));
+    renderDebtList();
+    renderDashboard();
+  });
+}
+
+function showApp(user) {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('user-name').textContent = user.displayName || user.email;
+  document.getElementById('user-email').textContent = user.email;
+  if(user.photoURL) {
+    document.getElementById('user-avatar').src = user.photoURL;
+    document.getElementById('user-avatar2').src = user.photoURL;
+  }
+  loadLocalSettings();
+  startListeners(user.uid);
+  showPage('dashboard');
+}
+
+function showLogin() {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+// Check redirect result first
+try {
+  document.getElementById('loading-text').textContent = 'Login যাচাই হচ্ছে...';
+  getRedirectResult(auth).then(result => {
+    // onAuthStateChanged will handle the rest
+  }).catch(e => {
+    console.log('Redirect error:', e);
+  });
+} catch(e) {}
+
+onAuthStateChanged(auth, user => {
+  if(user) {
+    showApp(user);
+  } else {
+    showLogin();
+  }
+});
+</script>
+
+<script>
+// ==================== STATE ====================
+let transactions = [], debts = [];
+let currentLang = 'bn';
+let isDark = true;
+let currentAddTab = 'income';
+let currentDebtTab = 'lent';
+let currentTxnFilter = 'all';
+let currentReportPeriod = 'monthly';
+let returningDebtId = null;
+let barChart = null, pieChart = null, trendChart = null;
+
+const L = {
+  bn: {
+    cats_income:['বেতন','ব্যবসা','ফ্রিল্যান্সিং','বোনাস','বিনিয়োগ','অন্যান্য'],
+    cats_expense:['খাবার','যাতায়াত','শপিং','চিকিৎসা','বিল','ভাড়া','বিনোদন','শিক্ষা','অন্যান্য'],
+    months:['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'],
+    shortMonths:['জান','ফেব','মার','এপ্র','মে','জুন','জুল','আগ','সেপ','অক্ট','নভ','ডিস'],
+    days:['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'],
+    dashboard:'ড্যাশবোর্ড',transactions:'লেনদেন',add:'লেনদেন যোগ',
+    debt:'ধার ট্র্যাকার',reports:'রিপোর্ট',analytics:'বিশ্লেষণ',settings:'সেটিংস',
+    welcome:'স্বাগতম! 👋',totalBalance:'মোট ব্যালেন্স',thisMonth:'এই মাসের হিসাব',
+    income:'মোট আয়',expense:'মোট খরচ',lent:'ধার দিয়েছি',borrowed:'ধার নিয়েছি',
+    recent:'সাম্প্রতিক লেনদেন',seeAll:'সব দেখুন',
+    incomeTab:'💚 আয়',expenseTab:'❤️ খরচ',
+    lentTab:'🤝 ধার দিয়েছি',borrowedTab:'💳 ধার নিয়েছি',
+    home:'হোম',txnNav:'লেনদেন',addNav:'যোগ করুন',debtNav:'ধার',reportsNav:'রিপোর্ট',
+    all:'সব',search:'খুঁজুন...',
+    today:'আজ',week:'এই সপ্তাহ',month:'এই মাস',year:'এই বছর',
+    incomeLabel:'আয়',expenseLabel:'খরচ',savingsLabel:'সঞ্চয়',txnCount:'লেনদেন',txnUnit:'টি',
+    incomeVsExpense:'আয় বনাম খরচ',expenseType:'খরচের ধরন',monthlyTrend:'মাসিক ট্রেন্ড',
+    healthScore:'আর্থিক স্বাস্থ্য স্কোর / ১০০',
+    darkMode:'ডার্ক মোড',exportBackup:'ব্যাকআপ Export',
+    noTxn:'কোনো লেনদেন নেই',notFound:'কোনো লেনদেন পাওয়া যায়নি',noData:'কোনো রেকর্ড নেই',noPayment:'কোনো পেমেন্ট নেই',
+    savedOk:'সেভ হয়েছে ✅',updatedOk:'আপডেট হয়েছে ✅',deletedOk:'মুছে গেছে',paymentOk:'পেমেন্ট সেভ হয়েছে ✅',exportOk:'ব্যাকআপ ডাউনলোড হয়েছে ✅',
+    enterAmount:'পরিমাণ লিখুন',enterName:'নাম লিখুন',overLimit:'বাকির বেশি দেওয়া যাবে না',
+    confirmDelete:'এই লেনদেন মুছবেন?',confirmDeleteDebt:'এই রেকর্ড মুছবেন?',
+    paid:'পরিশোধ',total:'মোট',remaining:'বাকি',repaid:'পরিশোধ',
+    addNew:'+ নতুন যোগ করুন',paymentBtn:'+ পেমেন্ট',historyBtn:'ইতিহাস',deleteBtn:'মুছুন',
+    topSpend:'সর্বোচ্চ খরচ',savingsRate:'সঞ্চয় হার',pendingDebt:'টি বকেয়া ধার',
+    totalPending:'মোট বাকি',goodSaving:'ভালো সঞ্চয় করছেন!',overspent:'খরচ আয়ের বেশি',noDataMonth:'এই মাসে কোনো লেনদেন নেই',
+  },
+  en: {
+    cats_income:['Salary','Business','Freelancing','Bonus','Investment','Other'],
+    cats_expense:['Food','Transport','Shopping','Medical','Bills','Rent','Entertainment','Education','Other'],
+    months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    shortMonths:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    dashboard:'Dashboard',transactions:'Transactions',add:'Add Transaction',
+    debt:'Debt Tracker',reports:'Reports',analytics:'Analytics',settings:'Settings',
+    welcome:'Welcome! 👋',totalBalance:'Total Balance',thisMonth:'This month',
+    income:'Total Income',expense:'Total Expense',lent:'Money Lent',borrowed:'Money Borrowed',
+    recent:'Recent Transactions',seeAll:'See All',
+    incomeTab:'💚 Income',expenseTab:'❤️ Expense',
+    lentTab:'🤝 Money Lent',borrowedTab:'💳 Money Borrowed',
+    home:'Home',txnNav:'Transactions',addNav:'Add',debtNav:'Debt',reportsNav:'Reports',
+    all:'All',search:'Search...',
+    today:'Today',week:'This Week',month:'This Month',year:'This Year',
+    incomeLabel:'Income',expenseLabel:'Expense',savingsLabel:'Savings',txnCount:'Transactions',txnUnit:'',
+    incomeVsExpense:'Income vs Expense',expenseType:'Expense by Category',monthlyTrend:'Monthly Trend',
+    healthScore:'Financial Health Score / 100',
+    darkMode:'Dark Mode',exportBackup:'Export Backup',
+    noTxn:'No transactions',notFound:'No transactions found',noData:'No records found',noPayment:'No payments yet',
+    savedOk:'Saved ✅',updatedOk:'Updated ✅',deletedOk:'Deleted',paymentOk:'Payment saved ✅',exportOk:'Backup downloaded ✅',
+    enterAmount:'Enter amount',enterName:'Enter name',overLimit:'Cannot exceed remaining amount',
+    confirmDelete:'Delete this transaction?',confirmDeleteDebt:'Delete this record?',
+    paid:'Paid',total:'Total',remaining:'Remaining',repaid:'Repaid',
+    addNew:'+ Add New',paymentBtn:'+ Payment',historyBtn:'History',deleteBtn:'Delete',
+    topSpend:'Top Spending',savingsRate:'Savings Rate',pendingDebt:' pending debts',
+    totalPending:'Total pending',goodSaving:'Good savings!',overspent:'Spending exceeds income',noDataMonth:'No transactions this month',
+  }
+};
+
+const catIcons = {
+  'বেতন':'💼','Salary':'💼','ব্যবসা':'🏪','Business':'🏪',
+  'ফ্রিল্যান্সিং':'💻','Freelancing':'💻','বোনাস':'🎁','Bonus':'🎁',
+  'বিনিয়োগ':'📈','Investment':'📈','অন্যান্য':'💰','Other':'💰',
+  'খাবার':'🍽️','Food':'🍽️','যাতায়াত':'🚗','Transport':'🚗',
+  'শপিং':'🛍️','Shopping':'🛍️','চিকিৎসা':'💊','Medical':'💊',
+  'বিল':'📄','Bills':'📄','ভাড়া':'🏠','Rent':'🏠',
+  'বিনোদন':'🎮','Entertainment':'🎮','শিক্ষা':'📚','Education':'📚'
+};
+const catColors = {
+  'বেতন':'#4ade80','Salary':'#4ade80','ব্যবসা':'#38bdf8','Business':'#38bdf8',
+  'ফ্রিল্যান্সিং':'#a78bfa','Freelancing':'#a78bfa','বোনাস':'#fbbf24','Bonus':'#fbbf24',
+  'বিনিয়োগ':'#2dd4bf','Investment':'#2dd4bf','অন্যান্য':'#94a3b8','Other':'#94a3b8',
+  'খাবার':'#f87171','Food':'#f87171','যাতায়াত':'#fb923c','Transport':'#fb923c',
+  'শপিং':'#fbbf24','Shopping':'#fbbf24','চিকিৎসা':'#f472b6','Medical':'#f472b6',
+  'বিল':'#94a3b8','Bills':'#94a3b8','ভাড়া':'#60a5fa','Rent':'#60a5fa',
+  'বিনোদন':'#a78bfa','Entertainment':'#a78bfa','শিক্ষা':'#34d399','Education':'#34d399'
+};
+
+function t(k){ return L[currentLang][k] || k; }
+function fmt(n){ const a=Math.abs(n); if(a>=10000000)return '৳'+(n/10000000).toFixed(1)+'কোটি'; if(a>=100000)return '৳'+(n/100000).toFixed(1)+'লাখ'; return '৳'+n.toLocaleString('bn-BD'); }
+function today(){ return new Date().toISOString().split('T')[0]; }
+function fmtDate(d){ if(!d)return ''; const p=d.split('-'); return `${p[2]} ${t('months')[parseInt(p[1])-1]}, ${p[0]}`; }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function el(id){ return document.getElementById(id); }
+function setText(id,v){ const e=el(id); if(e)e.textContent=v; }
+
+function loadLocalSettings(){
+  currentLang = localStorage.getItem('lang')||'bn';
+  isDark = (localStorage.getItem('theme')||'dark')==='dark';
+  applyTheme(); applyLang();
+}
+
+function applyTheme(){
+  document.body.classList.toggle('light',!isDark);
+  const t=el('theme-toggle'); if(t)t.classList.toggle('on',isDark);
+  const b=el('theme-btn'); if(b)b.textContent=isDark?'🌙':'☀️';
+}
+
+function toggleTheme(){ isDark=!isDark; applyTheme(); localStorage.setItem('theme',isDark?'dark':'light'); }
+
+function applyLang(){
+  const lb=el('lang-btn'); if(lb)lb.textContent=currentLang==='bn'?'EN':'বাং';
+  const la=el('lang-arrow'); if(la)la.textContent=currentLang==='bn'?'EN →':'বাংলা →';
+  setText('dash-welcome',t('welcome'));
+  setText('lbl-total-balance',t('totalBalance'));
+  setText('dash-balance-sub',t('thisMonth'));
+  setText('lbl-income',t('income')); setText('lbl-expense',t('expense'));
+  setText('lbl-lent',t('lent')); setText('lbl-borrowed',t('borrowed'));
+  setText('lbl-recent',t('recent')); setText('lbl-see-all',t('seeAll'));
+  setText('tab-income',t('incomeTab')); setText('tab-expense',t('expenseTab'));
+  setText('tab-lent',t('lentTab')); setText('tab-borrowed',t('borrowedTab'));
+  setText('nav-lbl-home',t('home')); setText('nav-lbl-txn',t('txnNav'));
+  setText('nav-lbl-add',t('addNav')); setText('nav-lbl-debt',t('debtNav'));
+  setText('nav-lbl-reports',t('reportsNav'));
+  setText('fc-all',t('all'));
+  setText('fc-income',currentLang==='bn'?'আয়':'Income');
+  setText('fc-expense',currentLang==='bn'?'খরচ':'Expense');
+  const si=el('txn-search'); if(si)si.placeholder=t('search');
+  setText('pb-daily',t('today')); setText('pb-weekly',t('week'));
+  setText('pb-monthly',t('month')); setText('pb-yearly',t('year'));
+  setText('lbl-chart-bar',t('incomeVsExpense')); setText('lbl-chart-pie',t('expenseType'));
+  setText('lbl-health',t('healthScore')); setText('lbl-trend',t('monthlyTrend'));
+  setText('lbl-darkmode',t('darkMode')); setText('lbl-export',t('exportBackup'));
+  updateCategorySelect();
+  renderDashboard(); renderTransactions(); renderDebtList();
+}
+
+function toggleLang(){ currentLang=currentLang==='bn'?'en':'bn'; localStorage.setItem('lang',currentLang); applyLang(); }
+
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg=el('page-'+name); if(pg)pg.classList.add('active');
+  const nav=el('nav-'+name); if(nav)nav.classList.add('active');
+  const titles={dashboard:t('dashboard'),transactions:t('transactions'),add:t('add'),debt:t('debt'),reports:t('reports'),analytics:t('analytics'),settings:t('settings')};
+  setText('page-title',titles[name]||'অর্থকোষ');
+  el('content').scrollTop=0;
+  if(name==='reports')setTimeout(renderCharts,100);
+  if(name==='analytics')setTimeout(renderAnalytics,100);
+  if(name==='debt')renderDebtList();
+  if(name==='dashboard')renderDashboard();
+  if(name==='transactions')renderTransactions();
+}
+
+function renderDashboard(){
+  const now=new Date(); const y=now.getFullYear(),m=now.getMonth();
+  setText('dash-date',`${t('days')[now.getDay()]}, ${now.getDate()} ${t('months')[m]} ${y}`);
+  const mt=transactions.filter(tx=>{const d=new Date(tx.date);return d.getFullYear()===y&&d.getMonth()===m;});
+  const inc=mt.filter(tx=>tx.type==='income').reduce((a,tx)=>a+tx.amount,0);
+  const exp=mt.filter(tx=>tx.type==='expense').reduce((a,tx)=>a+tx.amount,0);
+  const pl=debts.filter(d=>d.debtType==='lent').reduce((a,d)=>a+(d.amount-d.paidAmount),0);
+  const pb=debts.filter(d=>d.debtType==='borrowed').reduce((a,d)=>a+(d.amount-d.paidAmount),0);
+  setText('dash-balance',fmt(inc-exp)); setText('dash-income',fmt(inc));
+  setText('dash-expense',fmt(exp)); setText('dash-lent',fmt(pl)); setText('dash-borrow',fmt(pb));
+  const re=el('recent-txns'); if(!re)return;
+  const recent=transactions.slice(0,5);
+  re.innerHTML=recent.length===0?`<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">${t('noTxn')}</div></div>`:recent.map(txnHTML).join('');
+}
+
+function txnHTML(tx){
+  const icon=catIcons[tx.category]||'💰';
+  const color=catColors[tx.category]||'#94a3b8';
+  const isInc=tx.type==='income';
+  return `<div class="txn-item" onclick="openEditModal('${tx.id}')">
+    <div class="txn-icon-wrap" style="background:${color}22">${icon}</div>
+    <div class="txn-info"><div class="txn-cat">${tx.category}</div><div class="txn-note">${tx.note||'—'}</div><div class="txn-date">${fmtDate(tx.date)}</div></div>
+    <div class="txn-right"><div class="txn-amount ${isInc?'pos':'neg'}">${isInc?'+':'-'}${fmt(tx.amount)}</div></div>
+  </div>`;
+}
+
+function setTxnFilter(f,el){currentTxnFilter=f;document.querySelectorAll('#txn-filters .filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderTransactions();}
+
+function renderTransactions(){
+  const search=(el('txn-search')?.value||'').toLowerCase();
+  let filtered=transactions;
+  if(currentTxnFilter!=='all')filtered=filtered.filter(tx=>tx.type===currentTxnFilter);
+  if(search)filtered=filtered.filter(tx=>tx.category.toLowerCase().includes(search)||(tx.note||'').toLowerCase().includes(search));
+  const e=el('all-txns'); if(!e)return;
+  e.innerHTML=filtered.length===0?`<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">${t('notFound')}</div></div>`:filtered.map(txnHTML).join('');
+}
+
+function setAddTab(tab,e){currentAddTab=tab;document.querySelectorAll('#page-add .form-tab').forEach(x=>x.classList.remove('active'));e.classList.add('active');updateCategorySelect();}
+
+function updateCategorySelect(){
+  const cats=currentAddTab==='income'?t('cats_income'):t('cats_expense');
+  const sel=el('add-category'); if(sel)sel.innerHTML=cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  const d=el('add-date'); if(d&&!d.value)d.value=today();
+}
+
+async function saveTransaction(){
+  const amount=parseFloat(el('add-amount').value);
+  const category=el('add-category').value;
+  const date=el('add-date').value;
+  const note=el('add-note').value.trim();
+  if(!amount||amount<=0){showToast(t('enterAmount'),'error');return;}
+  if(!date){showToast('তারিখ দিন','error');return;}
+  const tx={id:uid(),type:currentAddTab,amount,category,date,note,createdAt:Date.now()};
+  try{await window.dbSaveTxn(tx);el('add-amount').value='';el('add-note').value='';showToast(t('savedOk'),'success');}
+  catch(e){showToast('Error saving','error');}
+}
+
+function openEditModal(id){
+  const tx=transactions.find(x=>x.id===id); if(!tx)return;
+  el('edit-id').value=tx.id; el('edit-type').value=tx.type;
+  el('edit-amount').value=tx.amount;
+  const cats=tx.type==='income'?t('cats_income'):t('cats_expense');
+  el('edit-category').innerHTML=cats.map(c=>`<option value="${c}" ${c===tx.category?'selected':''}>${c}</option>`).join('');
+  el('edit-date').value=tx.date; el('edit-note').value=tx.note||'';
+  openModal('edit-modal');
+}
+
+async function updateTransaction(){
+  const id=el('edit-id').value; const tx=transactions.find(x=>x.id===id); if(!tx)return;
+  tx.amount=parseFloat(el('edit-amount').value); tx.category=el('edit-category').value;
+  tx.date=el('edit-date').value; tx.note=el('edit-note').value.trim();
+  await window.dbSaveTxn(tx); closeModal('edit-modal'); showToast(t('updatedOk'),'success');
+}
+
+async function deleteTransaction(){
+  if(!confirm(t('confirmDelete')))return;
+  const id=el('edit-id').value; await window.dbDeleteTxn(id); closeModal('edit-modal'); showToast(t('deletedOk'),'success');
+}
+
+function setDebtTab(tab,e){currentDebtTab=tab;document.querySelectorAll('#page-debt .form-tab').forEach(x=>x.classList.remove('active'));e.classList.add('active');renderDebtList();}
+
+function openDebtModal(){
+  el('debt-name').value=''; el('debt-phone').value=''; el('debt-amount').value='';
+  el('debt-date').value=today(); el('debt-due').value=''; el('debt-note').value='';
+  openModal('debt-modal');
+}
+
+async function saveDebt(){
+  const name=el('debt-name').value.trim(); const amount=parseFloat(el('debt-amount').value);
+  if(!name){showToast(t('enterName'),'error');return;}
+  if(!amount||amount<=0){showToast(t('enterAmount'),'error');return;}
+  const debt={id:uid(),debtType:currentDebtTab,name,phone:el('debt-phone').value.trim(),amount,date:el('debt-date').value,dueDate:el('debt-due').value,note:el('debt-note').value.trim(),paidAmount:0,payments:[],createdAt:Date.now()};
+  await window.dbSaveDebt(debt); closeModal('debt-modal'); showToast(t('savedOk'),'success');
+}
+
+function renderDebtList(){
+  const filtered=debts.filter(d=>d.debtType===currentDebtTab);
+  const wrap=el('debt-list-wrap'); if(!wrap)return;
+  const addBtn=`<div style="padding:12px 20px"><button class="btn-primary" onclick="openDebtModal()" style="margin-top:0">${t('addNew')}</button></div>`;
+  if(filtered.length===0){wrap.innerHTML=addBtn+`<div class="empty-state"><div class="empty-icon">🤝</div><div class="empty-text">${t('noData')}</div></div>`;return;}
+  wrap.innerHTML=addBtn+filtered.map(d=>{
+    const rem=d.amount-d.paidAmount; const pct=Math.min(100,Math.round((d.paidAmount/d.amount)*100)); const done=rem<=0; const isLent=d.debtType==='lent';
+    return `<div class="debt-card">
+      <div class="debt-header"><div><div class="debt-name">${d.name}</div><div class="debt-phone">${d.phone||'—'}</div></div><div class="debt-badge ${done?'badge-done':isLent?'badge-lent':'badge-borrowed'}">${done?t('paid'):isLent?t('lentTab'):t('borrowedTab')}</div></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:var(--text2)">${t('total')}: <b style="color:var(--text)">${fmt(d.amount)}</b></span><span style="color:var(--text2)">${t('remaining')}: <b style="color:${done?'var(--green)':isLent?'var(--yellow)':'var(--red)'}">${fmt(rem)}</b></span></div>
+      <div class="progress-wrap"><div class="progress-info"><span>${t('repaid')} ${pct}%</span><span>${fmt(d.paidAmount)}</span></div><div class="progress-bar"><div class="progress-fill ${isLent?'fill-lent':'fill-borrow'}" style="width:${pct}%"></div></div></div>
+      <div class="debt-footer"><div class="debt-date">${fmtDate(d.date)}${d.dueDate?' • '+fmtDate(d.dueDate):''}</div><div class="debt-actions"><button class="btn-success" onclick="openReturnModal('${d.id}')">${t('paymentBtn')}</button><button class="btn-primary" style="padding:8px 14px;font-size:12px;width:auto;margin:0" onclick="showHistory('${d.id}')">${t('historyBtn')}</button><button class="btn-danger" onclick="deleteDebt('${d.id}')">${t('deleteBtn')}</button></div></div>
+    </div>`;
+  }).join('');
+}
+
+function openReturnModal(debtId){
+  returningDebtId=debtId; const d=debts.find(x=>x.id===debtId);
+  el('return-modal-title').textContent=`${t('paymentBtn')} — ${d.name}`;
+  el('return-amount').value=''; el('return-date').value=today(); el('return-note').value='';
+  openModal('return-modal');
+}
+
+async function saveReturn(){
+  const amount=parseFloat(el('return-amount').value);
+  if(!amount||amount<=0){showToast(t('enterAmount'),'error');return;}
+  const idx=debts.findIndex(x=>x.id===returningDebtId); if(idx<0)return;
+  const d={...debts[idx]};
+  if(amount>(d.amount-d.paidAmount)){showToast(t('overLimit'),'error');return;}
+  const payment={amount,date:el('return-date').value,note:el('return-note').value.trim(),id:uid()};
+  d.payments=[...(d.payments||[]),payment]; d.paidAmount=(d.paidAmount||0)+amount; d.lastPaymentDate=payment.date;
+  await window.dbSaveDebt(d); closeModal('return-modal'); showToast(t('paymentOk'),'success');
+}
+
+function showHistory(debtId){
+  const d=debts.find(x=>x.id===debtId); const payments=d.payments||[];
+  el('history-list').innerHTML=payments.length===0?`<div class="empty-state" style="padding:24px"><div class="empty-icon">📭</div><div class="empty-text">${t('noPayment')}</div></div>`:`<div style="padding:4px 0">${payments.map(p=>`<div class="return-item"><div><div style="font-size:14px;font-weight:600">${fmt(p.amount)}</div><div style="font-size:11px;color:var(--text2)">${p.note||'—'}</div></div><div style="text-align:right"><div style="font-size:12px;color:var(--text2)">${fmtDate(p.date)}</div></div></div>`).join('')}</div>`;
+  openModal('history-modal');
+}
+
+async function deleteDebt(id){
+  if(!confirm(t('confirmDeleteDebt')))return;
+  await window.dbDeleteDebt(id); showToast(t('deletedOk'),'success');
+}
+
+function setReportPeriod(p,e){currentReportPeriod=p;document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));e.classList.add('active');renderReportStats();renderCharts();}
+
+function getReportDateRange(){
+  const now=new Date(); let start,end=today();
+  if(currentReportPeriod==='daily'){start=today();}
+  else if(currentReportPeriod==='weekly'){const d=new Date(now);d.setDate(d.getDate()-d.getDay());start=d.toISOString().split('T')[0];}
+  else if(currentReportPeriod==='monthly'){start=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;}
+  else{start=`${now.getFullYear()}-01-01`;}
+  return{start,end};
+}
+
+function renderReportStats(){
+  const{start,end}=getReportDateRange();
+  const filtered=transactions.filter(tx=>tx.date>=start&&tx.date<=end);
+  const inc=filtered.filter(tx=>tx.type==='income').reduce((a,tx)=>a+tx.amount,0);
+  const exp=filtered.filter(tx=>tx.type==='expense').reduce((a,tx)=>a+tx.amount,0);
+  const sav=inc-exp;
+  const e=el('report-stats'); if(!e)return;
+  e.innerHTML=[{label:t('incomeLabel'),value:fmt(inc),color:'var(--green)',icon:'📈'},{label:t('expenseLabel'),value:fmt(exp),color:'var(--red)',icon:'📉'},{label:t('savingsLabel'),value:fmt(sav),color:sav>=0?'var(--green)':'var(--red)',icon:'💰'},{label:t('txnCount'),value:filtered.length+t('txnUnit'),color:'var(--accent)',icon:'📋'}].map(s=>`<div class="report-stat"><div style="font-size:20px">${s.icon}</div><div style="font-size:11px;color:var(--text2);margin-top:6px">${s.label}</div><div style="font-size:18px;font-weight:700;color:${s.color};font-family:'JetBrains Mono',monospace;margin-top:2px">${s.value}</div></div>`).join('');
+}
+
+function renderCharts(){
+  renderReportStats();
+  const{start,end}=getReportDateRange();
+  const filtered=transactions.filter(tx=>tx.date>=start&&tx.date<=end);
+  const inc=filtered.filter(tx=>tx.type==='income').reduce((a,tx)=>a+tx.amount,0);
+  const exp=filtered.filter(tx=>tx.type==='expense').reduce((a,tx)=>a+tx.amount,0);
+  if(barChart)barChart.destroy();
+  const bc=el('bar-chart');
+  if(bc)barChart=new Chart(bc,{type:'bar',data:{labels:[t('incomeLabel'),t('expenseLabel'),t('savingsLabel')],datasets:[{data:[inc,exp,inc-exp],backgroundColor:['rgba(74,222,128,0.8)','rgba(248,113,113,0.8)','rgba(56,189,248,0.8)'],borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}},x:{ticks:{color:'#94a3b8',font:{size:11}},grid:{display:false}}}}});
+  const catMap={};
+  filtered.filter(tx=>tx.type==='expense').forEach(tx=>{catMap[tx.category]=(catMap[tx.category]||0)+tx.amount;});
+  const labels=Object.keys(catMap);
+  if(pieChart)pieChart.destroy();
+  const pc=el('pie-chart');
+  if(pc&&labels.length>0)pieChart=new Chart(pc,{type:'doughnut',data:{labels,datasets:[{data:labels.map(l=>catMap[l]),backgroundColor:labels.map(l=>catColors[l]||'#94a3b8'),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:10},boxWidth:12,padding:8}}}}});
+}
+
+function renderAnalytics(){
+  const now=new Date();const y=now.getFullYear(),m=now.getMonth();
+  const mt=transactions.filter(tx=>{const d=new Date(tx.date);return d.getFullYear()===y&&d.getMonth()===m;});
+  const inc=mt.filter(tx=>tx.type==='income').reduce((a,tx)=>a+tx.amount,0);
+  const exp=mt.filter(tx=>tx.type==='expense').reduce((a,tx)=>a+tx.amount,0);
+  let score=50;
+  if(inc>0){const sr=(inc-exp)/inc;if(sr>=0.3)score=90;else if(sr>=0.2)score=75;else if(sr>=0.1)score=65;else if(sr>=0)score=50;else score=30;}
+  const se=el('health-score');
+  if(se){se.textContent=score;se.style.color=score>=75?'var(--green)':score>=50?'var(--yellow)':'var(--red)';}
+  const catMap={};
+  mt.filter(tx=>tx.type==='expense').forEach(tx=>{catMap[tx.category]=(catMap[tx.category]||0)+tx.amount;});
+  const topCat=Object.entries(catMap).sort((a,b)=>b[1]-a[1])[0];
+  const insights=[];
+  if(topCat)insights.push({icon:catIcons[topCat[0]]||'💸',title:`${t('topSpend')}: ${topCat[0]}`,desc:fmt(topCat[1])});
+  if(inc>0)insights.push({icon:'💰',title:`${t('savingsRate')}: ${Math.round(((inc-exp)/inc)*100)}%`,desc:inc>exp?t('goodSaving'):t('overspent')});
+  const pd=debts.filter(d=>d.paidAmount<d.amount);
+  if(pd.length>0)insights.push({icon:'⚠️',title:`${pd.length}${t('pendingDebt')}`,desc:`${t('totalPending')}: ${fmt(pd.reduce((a,d)=>a+(d.amount-d.paidAmount),0))}`});
+  if(mt.length===0)insights.push({icon:'📊',title:'No Data',desc:t('noDataMonth')});
+  el('insights-list').innerHTML=insights.map(i=>`<div class="insight-card"><div class="insight-icon">${i.icon}</div><div class="insight-text"><div class="insight-title">${i.title}</div><div class="insight-desc">${i.desc}</div></div></div>`).join('');
+  const last6=[];
+  for(let i=5;i>=0;i--){const d=new Date(y,m-i,1);const my=d.getFullYear(),mm=d.getMonth();const mT=transactions.filter(tx=>{const dt=new Date(tx.date);return dt.getFullYear()===my&&dt.getMonth()===mm;});last6.push({label:t('shortMonths')[mm],income:mT.filter(tx=>tx.type==='income').reduce((a,tx)=>a+tx.amount,0),expense:mT.filter(tx=>tx.type==='expense').reduce((a,tx)=>a+tx.amount,0)});}
+  if(trendChart)trendChart.destroy();
+  const tc=el('trend-chart');
+  if(tc)trendChart=new Chart(tc,{type:'line',data:{labels:last6.map(x=>x.label),datasets:[{label:t('incomeLabel'),data:last6.map(x=>x.income),borderColor:'#4ade80',backgroundColor:'rgba(74,222,128,0.1)',tension:0.4,fill:true,pointRadius:4},{label:t('expenseLabel'),data:last6.map(x=>x.expense),borderColor:'#f87171',backgroundColor:'rgba(248,113,113,0.1)',tension:0.4,fill:true,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',font:{size:10},boxWidth:12}}},scales:{y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}},x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{display:false}}}}});
+}
+
+function openModal(id){el(id).classList.add('open');}
+function closeModal(id){el(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+
+let toastTimer;
+function showToast(msg,type=''){
+  const e=el('toast'); e.textContent=msg; e.className='toast show'+(type?' '+type:'');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>e.classList.remove('show'),2500);
+}
+
+function exportJSON(){
+  const data={version:'2.0',exportDate:new Date().toISOString(),transactions,debts};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`orthokosh-backup-${today()}.json`; a.click();
+  URL.revokeObjectURL(url); showToast(t('exportOk'),'success');
+}
+
+// Init
+loadLocalSettings();
+updateCategorySelect();
+el('add-date').value=today();
+</script>
+</body>
+</html>
